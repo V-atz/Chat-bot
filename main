@@ -1,0 +1,189 @@
+#importing required modules
+
+import random
+import datetime
+import spacy
+import os
+from chatterbot_corpus import corpus
+from chatterbot import ChatBot
+from chatterbot.storage import SQLStorageAdapter
+from chatterbot.trainers import ListTrainer
+import tkinter as tk
+
+#pretrained english language model of spacy
+
+nlp = spacy.load('en_core_web_md')
+
+#initialize bot
+
+bot = ChatBot('Career Guide',
+              storage_adapter='chatterbot.storage.SQLStorageAdapter',
+              database_uri='sqlite:///career_guide_database.sqlite3'
+              )
+
+#conversations to train bot
+
+conv = [
+    'hey','hi','hii','hello','hyy',
+    'Hi there, how may I assist you today ? ',
+    'how are you ',
+    'I am doing great, thanks for asking.',
+    'what is your name ',
+    'My creator named me Career Guide.',
+    'what is your job',
+    'I am designed to help people throughout their career journey.'
+]
+
+#initialize trainer for training
+
+trainer = ListTrainer(bot)
+trainer.train(conv)
+
+#expected user greets
+
+user_greet = ['hey','hi','hii','hello','hyy','namaste','hola','hie','halo','helloh','yooo','yoo','oye','oii','sunn','oyee','heyyy','hey','hy', 'what\'s up', 'sup', 'hey there', 'hiii','good morning', 'good afternoon', 'good evening', 'hey dude', 'hey man', 'hiya', 'greetings', 'hola', 'howdy', 'aloha', 'namaste', 'yoohoo', 'wassup', 'hi there', 'yo!', 'hey ya', 'hey you', 'hey friend', 'hey mate', 'hey guys', 'hey everyone', 'hey team', 'yo yo', 'hi hi', 'hello there', 'yo ho ho', 'how\'s it going', 'what\'s happening', 'what\'s new', 'long time no see', 'hey bud', 'hey bro', 'hey sis', 'hey girl', 'hey gorgeous', 'hey handsome', 'hey cutie', 'hey sweetie', 'hey love', 'kya haal hai', 'kya chal raha hai', 'kaise ho', 'kya baat hai', 'kya scene hai', 'kya kar rahe ho', 'aur batao', 'kya haal chal hai', 'sasriakal', 'hello ji', 'namaste ji', 'hi ji', 'kem chho', 'salam', 'hullo', 'kya bolta hai', 'bolo', 'batao', 'kaisa hai', 'kya khayal hai', 'kya kehte ho', 'kya hua', 'aap kaise hain', 'aap kya haal chaal hain']
+
+#bot response greets
+
+greet = ['Hey there !','Hi there !','Hello','Hii']
+
+#bye inputs
+
+bye_words = ['bye','by', 'goodbye', 'see you', 'see ya', 'adios', 'ciao', 'farewell']
+
+#creating a gui
+
+window = tk.Tk()
+window.title("Career Guide")
+
+#setting window size
+
+window.geometry("450x650")
+window.resizable(False, False)
+
+#putting a logo/image for chatbot window
+
+logo_image = tk.PhotoImage(file="chatbotlogo.png")
+logo_label = tk.Label(window, image=logo_image)
+logo_label.pack(side=tk.TOP, pady=10)
+
+#taking input from user and generating output
+
+conversation = []
+def get_bot_response(event):
+
+    # get user input and display it in output text area
+
+    user_input = input_text.get("1.0", tk.END).strip()
+    output_text.insert(tk.END, "User: " + user_input + "\n\n")
+
+    # clear input text area
+
+    input_text.delete("1.0", tk.END)
+
+    # process user input and get bot response
+
+    if user_input.lower() in bye_words:
+        output_text.insert(tk.END,
+                           "Career Guide: Please let me know if you need any assistance, as I'm always here to help in any way I can.\n\n")
+    elif user_input.lower() in user_greet:
+        output_text.insert(tk.END, "Career Guide: " + random.choice(greet) + "\n\n")
+    else:
+        ans = bot.get_response(user_input)
+        output_text.insert(tk.END, "Career Guide: " + str(ans) + "\n\n")
+        output_text.see(tk.END)
+
+        # create new statement instances for user input and bot response
+
+        user_statement = bot.storage.create_statement(text=user_input)
+        bot_response = bot.get_response(user_input, user_statement)
+
+        # save the statement instances in the database using the bot's storage adapter
+
+        bot.storage.create_conversation([user_statement, bot_response])
+
+# bind Enter key to get_bot_response function
+
+        input_text.bind("<Return>", get_bot_response)
+
+# create input and output text boxes with labels
+
+input_label = tk.Label(window, text="User Input")
+input_label.pack(side=tk.TOP, pady=5)
+input_text = tk.Text(window, height=1)
+input_text.pack(side=tk.TOP, padx=5, pady=5)
+
+output_label = tk.Label(window, text="Career Guide")
+output_label.pack(side=tk.TOP, pady=5)
+output_text = tk.Text(window, height=20)
+output_text.pack(side=tk.TOP, padx=5, pady=5)
+
+# bind Enter key to get_bot_response function
+
+input_text.bind("<Return>", get_bot_response)
+
+# add a scrollbar to the output_text widget
+
+scrollbar = tk.Scrollbar(window, command=output_text.yview)
+output_text.configure(yscrollcommand=scrollbar.set)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+output_text.see(tk.END)
+
+import tkinter as tk
+
+
+def open_career_guide():
+    # Code to open career guide window or provide career guide information goes here
+    print("Career Guide selected")
+
+
+def open_ug_career_guide():
+    # Code to open technical career guide window or provide technical career guide information goes here
+    print("Undergraduation Career Guide selected")
+
+
+def open_school_career_guide():
+    # Code to open untechnical career guide window or provide untechnical career guide information goes here
+    print("School Career Guide selected")
+
+
+def open_pg_conversation():
+    # Code to open normal conversation window goes here
+    print("Postgraduation selected")
+
+
+# Create the main window
+root = tk.Tk()
+
+# Create a label to prompt the user to make a selection
+label = tk.Label(root, text="Please select an option:")
+label.pack()
+
+# Create the "Career Guide" button and assign the open_career_guide function to it
+career_guide_button = tk.Button(root, text="Career Guide", command=open_career_guide)
+career_guide_button.pack()
+
+# Create the "Normal Conversation" button and assign the open_normal_conversation function to it
+pg_conversation_button = tk.Button(root, text="Postgraduation", command=open_pg_conversation)
+pg_conversation_button.pack()
+
+# Create a frame to hold the technical and untechnical career guide buttons
+career_guide_frame = tk.Frame(root)
+
+# Create the "Technical" button and assign the open_technical_career_guide function to it
+ug_button = tk.Button(career_guide_frame, text="Undergraduation", command=open_ug_career_guide)
+ug_button.pack(side=tk.LEFT)
+
+# Create the "Untechnical" button and assign the open_untechnical_career_guide function to it
+school_button = tk.Button(career_guide_frame, text="School", command=open_school_career_guide)
+school_button.pack(side=tk.RIGHT)
+
+# Pack the career guide frame
+career_guide_frame.pack()
+
+# Start the main loop
+root.mainloop()
+
+#starting the GUI
+
+window.mainloop()
